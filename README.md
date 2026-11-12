@@ -4,7 +4,7 @@ An architectural XR prototype led by Fan Huang, connecting a parametric habitat 
 
 ## Project and contribution
 
-Fan Huang developed the spatial rules and parametric models and led the Unity engineering and testing, with technical assistance from Jiujing Interactive. This is his first lead role on a project being developed for potential commercial application. The repository documents a prototype, not a deployed commercial product.
+Fan Huang developed the spatial rules and parametric models and led the Unity engineering and testing, with technical assistance from Jiujing Interactive. This is the first XR project he has led towards potential commercial application. The repository documents a prototype, not a deployed commercial product.
 
 ## Current version
 
