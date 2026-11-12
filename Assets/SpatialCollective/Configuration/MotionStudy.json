@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "duration": 32,
+  "referenceRoom": "S05",
+  "keys": [
+    {
+      "time": 0,
+      "phase": "01 OBSERVE",
+      "activation": [
+        0,
+        0,
+        0,
+        0,
+        0.35,
+        0.5
+      ],
+      "travel": [
+        0,
+        0
+      ]
+    },
+    {
+      "time": 4,
+      "phase": "02 UNFURL",
+      "activation": [
+        0,
+        0,
+        0,
+        0,
+        0.35,
+        0.5
+      ],
+      "travel": [
+        0,
+        0
+      ]
+    },
+    {
+      "time": 10,
+      "phase": "03 HOLD",
+      "activation": [
+        1,
+        1,
+        1,
+        1,
+        0.8,
+        0.7
+      ],
+      "travel": [
+        0.14,
+        0.15
+      ]
+    },
+    {
+      "time": 12,
+      "phase": "04 DIFFERENTIATE",
+      "activation": [
+        1,
+        1,
+        1,
+        1,
+        0.8,
+        0.7
+      ],
+      "travel": [
+        0.22,
+        0.25
+      ]
+    },
+    {
+      "time": 18,
+      "phase": "05 RETREAT",
+      "activation": [
+        0.8,
+        0.2,
+        0.95,
+        0.1,
+        0.6,
+        0.3
+      ],
+      "travel": [
+        0.65,
+        0.64
+      ]
+    },
+    {
+      "time": 26,
+      "phase": "06 REACH",
+      "activation": [
+        0,
+        0,
+        0,
+        0,
+        0.3,
+        0.5
+      ],
+      "travel": [
+        1,
+        0.92
+      ]
+    },
+    {
+      "time": 32,
+      "phase": "07 PREVIEW / APPLY",
+      "activation": [
+        0.3,
+        1,
+        0.15,
+        0.7,
+        0.7,
+        0.3
+      ],
+      "travel": [
+        1,
+        1
+      ]
+    }
+  ]
+}

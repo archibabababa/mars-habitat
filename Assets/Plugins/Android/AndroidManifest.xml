@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <!-- v0.4 uses direct hand semantics; hand tracking is a required capability. -->
+  <uses-permission android:name="com.oculus.permission.HAND_TRACKING" />
+  <uses-feature android:name="oculus.software.handtracking" android:required="true" />
+  <application>
+    <!-- Unity 6 OpenXR is configured to use GameActivity.  Declaring the
+         activity explicitly prevents the Gradle manifest merger from
+         producing an anonymous <activity> element. -->
+    <activity
+      android:name="com.unity3d.player.UnityPlayerGameActivity"
+      android:exported="true"
+      android:theme="@style/BaseUnityGameActivityTheme"
+      android:label="@string/app_name"
+      android:screenOrientation="sensorLandscape"
+      android:configChanges="fontScale|keyboard|keyboardHidden|locale|mnc|mcc|navigation|orientation|screenLayout|screenSize|smallestScreenSize|uiMode|touchscreen">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+      <meta-data android:name="android.app.lib_name" android:value="game" />
+      <meta-data android:name="unityplayer.UnityActivity" android:value="true" />
+    </activity>
+  </application>
+</manifest>

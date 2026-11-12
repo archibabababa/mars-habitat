@@ -1,0 +1,287 @@
+{
+  "schemaVersion": 2,
+  "pinchPressMetres": 0.025,
+  "pinchReleaseMetres": 0.04,
+  "handTravelMetres": 0.22,
+  "mousePixelsPerMetre": 800,
+  "overviewScale": 0.045,
+  "couplingResponses": [
+    -1.0,
+    1.0,
+    -1.0
+  ],
+  "presets": [
+    {
+      "name": "Gather",
+      "values": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "Unfurl",
+      "values": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "name": "Differentiate",
+      "values": [
+        0.8,
+        0.2,
+        0.95,
+        0.1,
+        0.7,
+        0.3
+      ]
+    }
+  ],
+  "menu": [
+    {
+      "label": "GATHER",
+      "command": "Preset",
+      "argument": 0
+    },
+    {
+      "label": "UNFURL",
+      "command": "Preset",
+      "argument": 1
+    },
+    {
+      "label": "DIFFERENTIATE",
+      "command": "Preset",
+      "argument": 2
+    },
+    {
+      "label": "LINK / FREE",
+      "command": "ToggleCoupling",
+      "argument": 0
+    },
+    {
+      "label": "ENTER / EXIT",
+      "command": "ToggleView",
+      "argument": 0
+    },
+    {
+      "label": "BACK",
+      "command": "CycleNode",
+      "argument": -1
+    },
+    {
+      "label": "NEXT ROOM",
+      "command": "CycleNode",
+      "argument": 1
+    },
+    {
+      "label": "S05 VIEW",
+      "command": "SelectReferenceRoom",
+      "argument": 0
+    },
+    {
+      "label": "APPLY",
+      "command": "Apply",
+      "argument": 0
+    },
+    {
+      "label": "UNDO",
+      "command": "Undo",
+      "argument": 0
+    },
+    {
+      "label": "COMPARE",
+      "command": "ToggleCompare",
+      "argument": 0
+    },
+    {
+      "label": "SHOW ROOMS",
+      "command": "ToggleRooms",
+      "argument": 0
+    },
+    {
+      "label": "STUDY / PAUSE",
+      "command": "ToggleDemo",
+      "argument": 0
+    },
+    {
+      "label": "RESTART 32s",
+      "command": "RestartDemo",
+      "argument": 0
+    },
+    {
+      "label": "TRAVEL / PAUSE",
+      "command": "ToggleDrift",
+      "argument": 0
+    },
+    {
+      "label": "BACKGROUND",
+      "command": "ToggleBackground",
+      "argument": 0
+    },
+    {
+      "label": "SAVE APPLIED",
+      "command": "SaveState",
+      "argument": 0
+    },
+    {
+      "label": "LOAD PREVIEW",
+      "command": "LoadState",
+      "argument": 0
+    },
+    {
+      "label": "REPOSITION",
+      "command": "Reposition",
+      "argument": 0
+    },
+    {
+      "label": "HIDE MENU",
+      "command": "HideMenu",
+      "argument": 0
+    },
+    {
+      "label": "IMPORT GH PREVIEW",
+      "command": "ImportAuthoredState",
+      "argument": 0
+    }
+  ],
+  "keyboard": [
+    {
+      "key": "Digit1",
+      "command": "SelectRegion",
+      "argument": 0
+    },
+    {
+      "key": "Digit2",
+      "command": "SelectRegion",
+      "argument": 1
+    },
+    {
+      "key": "Digit3",
+      "command": "SelectRegion",
+      "argument": 2
+    },
+    {
+      "key": "Digit4",
+      "command": "SelectRegion",
+      "argument": 3
+    },
+    {
+      "key": "Digit5",
+      "command": "SelectRegion",
+      "argument": 4
+    },
+    {
+      "key": "Digit6",
+      "command": "SelectRegion",
+      "argument": 5
+    },
+    {
+      "key": "G",
+      "command": "Preset",
+      "argument": 0
+    },
+    {
+      "key": "U",
+      "command": "Preset",
+      "argument": 1
+    },
+    {
+      "key": "M",
+      "command": "Preset",
+      "argument": 2
+    },
+    {
+      "key": "V",
+      "command": "ToggleView",
+      "argument": 0
+    },
+    {
+      "key": "N",
+      "command": "CycleNode",
+      "argument": 1
+    },
+    {
+      "key": "P",
+      "command": "CycleNode",
+      "argument": -1
+    },
+    {
+      "key": "L",
+      "command": "ToggleCoupling",
+      "argument": 0
+    },
+    {
+      "key": "R",
+      "command": "ToggleRooms",
+      "argument": 0
+    },
+    {
+      "key": "Enter",
+      "command": "Apply",
+      "argument": 0
+    },
+    {
+      "key": "Backspace",
+      "command": "Undo",
+      "argument": 0
+    },
+    {
+      "key": "Space",
+      "command": "ToggleDemo",
+      "argument": 0
+    },
+    {
+      "key": "F",
+      "command": "ToggleDrift",
+      "argument": 0
+    },
+    {
+      "key": "H",
+      "command": "Reposition",
+      "argument": 0
+    },
+    {
+      "key": "B",
+      "command": "ToggleBackground",
+      "argument": 0
+    },
+    {
+      "key": "C",
+      "command": "ToggleCompare",
+      "argument": 0
+    },
+    {
+      "key": "F5",
+      "command": "SaveState",
+      "argument": 0
+    },
+    {
+      "key": "F9",
+      "command": "LoadState",
+      "argument": 0
+    },
+    {
+      "key": "Home",
+      "command": "SelectReferenceRoom",
+      "argument": 0
+    },
+    {
+      "key": "T",
+      "command": "RestartDemo",
+      "argument": 0
+    },
+    {
+      "key": "J",
+      "command": "ImportAuthoredState",
+      "argument": 0
+    }
+  ]
+}

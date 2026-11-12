@@ -1,0 +1,19 @@
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild*/
+[Ll]ogs/
+UserSettings/
+.vs/
+.idea/
+*.csproj
+*.sln
+*.apk
+*.aab
+*.keystore
+*.jks
+.env*
+/Assets/SpatialCollective/OfficialHands/Left Hand Tracking.prefab
+/Assets/SpatialCollective/OfficialHands/Right Hand Tracking.prefab
+/Assets/SpatialCollective/OfficialHands/Models/LeftHand.fbx
+/Assets/SpatialCollective/OfficialHands/Models/RightHand.fbx
