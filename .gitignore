@@ -6,6 +6,7 @@
 UserSettings/
 .vs/
 .idea/
+__pycache__/
 *.csproj
 *.sln
 *.apk
@@ -13,7 +14,7 @@ UserSettings/
 *.keystore
 *.jks
 .env*
-/Assets/SpatialCollective/OfficialHands/Left Hand Tracking.prefab
-/Assets/SpatialCollective/OfficialHands/Right Hand Tracking.prefab
-/Assets/SpatialCollective/OfficialHands/Models/LeftHand.fbx
-/Assets/SpatialCollective/OfficialHands/Models/RightHand.fbx
+/Unity/Assets/SpatialCollective/OfficialHands/Left Hand Tracking.prefab
+/Unity/Assets/SpatialCollective/OfficialHands/Right Hand Tracking.prefab
+/Unity/Assets/SpatialCollective/OfficialHands/Models/LeftHand.fbx
+/Unity/Assets/SpatialCollective/OfficialHands/Models/RightHand.fbx
