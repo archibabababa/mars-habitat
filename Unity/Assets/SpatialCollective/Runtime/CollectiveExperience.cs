@@ -56,6 +56,7 @@ namespace SpatialCollective
         public string Feedback => feedback;
         // Linked-view inspection node; -1 means unspecified.
         public int InspectionNode { get; private set; } = -1;
+        public int PreviousInteriorNode { get; private set; } = -1;
         // Selected parameter name, preferring a control caption over the region name.
         public string SelectedParameter => selectedControl != null ? selectedControl.caption : CollectiveRig.RegionNames[selectedRegion];
 
@@ -199,8 +200,8 @@ namespace SpatialCollective
         }
         private IEnumerator BeginExperience()
         {
-            // Switch to the reference cabin specified by StudyProfile.
-            yield return ChangeView(true, rig.FindNode(study.Profile.referenceRoom));
+            // Begin inside the remote cabin; the physical cabin panorama remains the backdrop.
+            yield return ChangeView(true, directSpatialInteraction ? rig.NodeForRegion(4) : rig.FindNode(study.Profile.referenceRoom));
 
             // Calibrate when the first post-transition pose is available for maximum stability.
             roomScale.Calibrate(); // First tracked pose is available after the opening transition.
@@ -661,6 +662,12 @@ namespace SpatialCollective
             fadeMaterial.color = Color.black;
 
             // Apply the destination view state.
+            // Retain the room we actually leave, not a hovered or selected target.
+            if (rig.inside && (!inside || rig.selectedNode != node))
+            {
+                PreviousInteriorNode = rig.selectedNode;
+                linkedViews.RememberInterior();
+            }
             rig.inside = inside; rig.selectedNode = node; selectedRegion = rig.RegionForNode(node);
             InspectionNode = node; selectedControl = null; bimanualSelected = true;
 
@@ -680,10 +687,8 @@ namespace SpatialCollective
             // Reposition the model when entering overview mode.
             else PlaceOverview();
 
-            // The imported, deformable cabin supplies the interior. A photographed
-            // interior behind it would duplicate walls and cannot follow body motion.
-
-            // Use the same exterior skybox for interior and overview views.
+            // The main view overlays the remote interior on the physical cabin panorama.
+            head.GetComponent<Skybox>().material = inside ? cabinSky : marsSky;
             RenderSettings.skybox = marsSky;
 
             // Update geometry, reposition the menu, and recalibrate the linked views' reference pose.

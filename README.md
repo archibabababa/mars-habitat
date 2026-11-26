@@ -1,10 +1,8 @@
 # Mars Habitat
 
-A parametric habitat and gesture-driven XR project led by Fan Huang, with technical assistance from Jiujing Interactive.
+A gesture-driven parametric habitat by Fan Huang, with technical assistance from Jiujing Interactive.
 
-- `GH/Mars.gh`: Grasshopper source. `Models/`: exports.
-- Open `Unity/` with Unity **6000.3.23f1** and let its packages install.
-- Run `python restore_hands.py` from this folder to restore the Unity XR Hands 1.8.1 visuals from the local package cache.
+- Quest 3: [Mars.apk](Mars.apk?raw=true).
+- Source: `GH/`, `Models/`, `Unity/` (Unity **6000.3.23f1**).
+- After Unity installs packages, run `python restore_hands.py` to restore the XR Hands visuals.
 - Open `Unity/Assets/SpatialCollective/Scenes/Spatial_Collective_Quest3.unity`.
-
-Third-party licenses are retained with their assets.

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using UnityEditor;
@@ -199,8 +199,8 @@ namespace SpatialCollectiveEditor
             PlayerSettings.Android.targetSdkVersion = (AndroidSdkVersions)35;
             PlayerSettings.companyName = "Fan Huang";
             PlayerSettings.productName = "Spatial Collective";
-            PlayerSettings.bundleVersion = "0.9.7";
-            PlayerSettings.Android.bundleVersionCode = 97;
+            PlayerSettings.bundleVersion = "0.9.12";
+            PlayerSettings.Android.bundleVersionCode = 102;
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.LandscapeLeft;
             PlayerSettings.colorSpace = ColorSpace.Linear;
             PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.Android, false);

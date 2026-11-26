@@ -8,6 +8,9 @@ namespace SpatialCollective
         [Tooltip("Direct spatial gestures and read-only values. Disable only for the legacy engineering console.")]
         public bool directSpatialInteraction=true; 
         [Range(1,2)] public float inhabitedScale=1.4f;
+        // Metres per full shape range; speed is normalized shape units per second.
+        [Min(.1f)] public float shapeHandTravel=.6f;
+        [Range(.1f,1)] public float shapeSpeed=.35f;
         private enum SpatialMode 
         { 
             Idle,
@@ -26,15 +29,17 @@ namespace SpatialCollective
         private int jumpNode=-1;
         public const float CabinJumpHoldSeconds=.65f;
         private int pendingSpatialNode=-1;
-        private bool spatialTargetResolved;
+        private bool spatialTargetResolved,pendingOverviewClick;
         public const float OneHandDeadZone=.008f;
         public bool SpatialPointerOnOverview {get;private set;}
+        public int SpatialHoverNode {get;private set;}=-1;
         public string SpatialHint
         {
             get
             {
                 if(spatialTrackingInterrupted)return "SHOW BOTH HANDS / OPEN TO RESUME";
                 if(IsTransitioning)return "CHANGING SPACE";
+                if(spatialMode==SpatialMode.PendingRight&&pendingOverviewClick&&pendingSpatialNode>=0)return "RELEASE: ENTER "+rig.data.nodes[pendingSpatialNode].id;
                 if(jumpHold>0&&jumpNode>=0)return "JUMP "+rig.data.nodes[jumpNode].id+" / HOLD "+Mathf.RoundToInt(Mathf.Clamp01(jumpHold/CabinJumpHoldSeconds)*100)+"%";
                 if(spatialMode==SpatialMode.Span||spatialMode==SpatialMode.Shape)
                 {
@@ -46,7 +51,7 @@ namespace SpatialCollective
                 int target=InspectionNode>=0?InspectionNode:rig.selectedNode;
                 string action=!rig.inside||target!=rig.selectedNode?"ENTER "+rig.data.nodes[target].id:"OVERVIEW";
                 return viewHold>0?action+" / HOLD "+Mathf.RoundToInt(Mathf.Clamp01(viewHold/.75f)*100)+"%":
-                    "R MIDDLE: "+rig.data.nodes[target].id+" / BOTH: "+action;
+                    (SpatialHoverNode>=0?"AIM "+rig.data.nodes[SpatialHoverNode].id+(SpatialPointerOnOverview?" / PINCH: ENTER":" / R MIDDLE: ENTER"):"POINT AT OVERVIEW / PINCH: ENTER")+" / BOTH: "+action;
             }
         }
         private static float DeliberateMotion(float delta)=>Mathf.Sign(delta)*Mathf.Max(0,Mathf.Abs(delta)-OneHandDeadZone);
@@ -60,7 +65,10 @@ namespace SpatialCollective
             //Process direct spatial interaction only when enabled.
             if (!directSpatialInteraction)return;  
             float dt=Mathf.Clamp(seconds,0,.1f);
-            bool tracked=frame.leftTracked&&frame.rightTracked;
+            // Navigation can use one visible hand; an active edit still requires both hands.
+            bool overviewPoint=frame.hasPointer&&dashboard!=null&&dashboard.TryOverviewRay(ray,out _,out _);
+            bool overviewClick=(spatialMode==SpatialMode.Idle&&overviewPoint||spatialMode==SpatialMode.PendingRight&&pendingOverviewClick)&&!frame.secondary&&!frame.leftMiddlePinch;
+            bool tracked=frame.rightTracked&&(frame.leftTracked||overviewClick||(!SpatialEditing&&!frame.primary&&!frame.secondary&&!frame.leftMiddlePinch));
             bool open=tracked&&!frame.primary&&!frame.secondary&&!frame.leftMiddlePinch&&!frame.rightMiddlePinch&&!frame.leftFist;
             if(IsTransitioning||!tracked)
             {
@@ -152,11 +160,12 @@ namespace SpatialCollective
                     BeginSpatial(SpatialMode.Span,frame);
                     return;
                 }
-                //Right-hand pinch enters PendingRight, then Shape or Travel.
+                // Right pinch clicks the overview or begins the authored direct-model edit.
                 if (frame.primary && !frame.leftMiddlePinch && !frame.rightMiddlePinch)
                 {
                     BeginSpatial(SpatialMode.PendingRight,frame);
                     pendingSpatialNode=hover;
+                    pendingOverviewClick=overviewPoint;
                     return;
                 }
                 //Left middle-finger pinch enters PendingLeft, then Coupling.
@@ -171,6 +180,7 @@ namespace SpatialCollective
             if(spatialMode==SpatialMode.PendingRight && frame.secondary && frame.primary)
             {
                 spatialMode=SpatialMode.Span;
+                pendingOverviewClick=false;
                 spatialSpan=Vector3.Distance(frame.leftPosition,frame.rightPosition);
                 spatialValue=rig.GetBaseline(selectedRegion);
                 return;
@@ -186,13 +196,18 @@ namespace SpatialCollective
                 spatialMode==SpatialMode.Coupling||spatialMode==SpatialMode.PendingLeft?frame.leftMiddlePinch&&!frame.primary&&!frame.secondary:frame.primary;
             if(!held)
             {
-                if(spatialMode==SpatialMode.PendingRight && pendingSpatialNode>=0)SelectSpatialNode(pendingSpatialNode,false);
+                int destination=spatialMode==SpatialMode.PendingRight&&pendingOverviewClick?pendingSpatialNode:-1;
+                if(spatialMode==SpatialMode.PendingRight && !pendingOverviewClick && pendingSpatialNode>=0)SelectSpatialNode(pendingSpatialNode,false);
                 FinishSpatialEdit();    // Compare with the starting snapshot to detect changes.
+                if(destination>=0)JumpToCabin(destination);
                 return;
             }
             spatialClock+=dt;
             if(spatialMode==SpatialMode.PendingRight)
             {
+                // An overview click navigates on release. A second index pinch above converts it
+                // into a two-hand edit of the current selection, without entering the pointed room.
+                if(pendingOverviewClick){SetSpatialPointer(frame.hasPointer,ray,pendingSpatialNode);return;}
                 if(spatialClock<.22f)return;
                 if(!spatialTargetResolved)
                 {
@@ -216,12 +231,12 @@ namespace SpatialCollective
             switch(spatialMode)
             {
                 case SpatialMode.Span:
-                    value+=(Vector3.Distance(frame.leftPosition,frame.rightPosition)-spatialSpan)/handTravel;
-                    rig.SetBaseline(selectedRegion,value);
+                    value+=DeliberateMotion(Vector3.Distance(frame.leftPosition,frame.rightPosition)-spatialSpan)/shapeHandTravel;
+                    SetSpatialShape(value,dt);
                     break;
                 case SpatialMode.Shape:
-                    value+=DeliberateMotion(frame.rightPosition.y-spatialRightStart.y)/handTravel;
-                    rig.SetBaseline(selectedRegion,value);
+                    value+=DeliberateMotion(frame.rightPosition.y-spatialRightStart.y)/shapeHandTravel;
+                    SetSpatialShape(value,dt);
                     break;
                 case SpatialMode.Travel:
                     value+=DeliberateMotion(Vector3.Dot(frame.rightPosition-spatialRightStart,spatialTravelAxis))*(selectedRegion==5?-1:1)/handTravel;
@@ -239,12 +254,19 @@ namespace SpatialCollective
             }
             rig.MarkDirty();feedback="Direct "+spatialMode+" gesture. Release to keep the result.";
         }
+        private void SetSpatialShape(float target,float dt)
+        {
+            // Smooth tracking noise and cap inflation speed. Releasing keeps the displayed value.
+            float current=rig.GetBaseline(selectedRegion);
+            float eased=Mathf.Lerp(current,Mathf.Clamp01(target),1-Mathf.Exp(-dt/.12f));
+            rig.SetBaseline(selectedRegion,Mathf.MoveTowards(current,eased,shapeSpeed*dt));
+        }
         private void BeginSpatial(SpatialMode mode,CollectiveInputFrame frame)
         {
             StopMotion();
             stateController.EndCompare();
             spatialStart=stateController.Capture();
-            spatialMode=mode;spatialClock=0;spatialTargetResolved=false;viewHold=undoHold=jumpHold=0;jumpNode=-1;pendingSpatialNode=-1;
+            spatialMode=mode;spatialClock=0;spatialTargetResolved=false;pendingOverviewClick=false;viewHold=undoHold=jumpHold=0;jumpNode=-1;pendingSpatialNode=-1;
             spatialRightStart=frame.rightPosition;spatialLeftStart=frame.leftPosition;
             spatialSpan=Vector3.Distance(frame.leftPosition,frame.rightPosition);spatialValue=rig.GetBaseline(selectedRegion);
             spatialTravelAxis=Vector3.ProjectOnPlane(head.transform.forward,Vector3.up).normalized;
@@ -283,7 +305,7 @@ namespace SpatialCollective
         public bool JumpToCabin(int node)
         {
             if(IsTransitioning||SpatialEditing||node<0||node>=rig.data.nodes.Length)return false;
-            if(rig.inside&&rig.selectedNode==node){feedback="Already inside "+rig.data.nodes[node].id+". Point to another cabin.";return false;}
+            if(rig.inside&&rig.selectedNode==node){SelectSpatialNode(node,false);feedback="Already inside "+rig.data.nodes[node].id+". Point to another cabin.";return false;}
             bimanual.Suspend();
             if(stateController.IsComparing)stateController.EndCompare();
             if(rig.inside)roomHistory.Push(rig.selectedNode);
@@ -331,14 +353,23 @@ namespace SpatialCollective
         }
         private void SetSpatialPointer(bool visible,Ray ray,int node)
         {
-            SpatialPointerOnOverview=visible&&dashboard!=null&&dashboard.TryOverviewRay(ray,out _,out _);
-            if(pointerLine!=null)pointerLine.enabled=false;
-            if(reticle==null)return;
-            reticle.gameObject.SetActive(visible&&node>=0);
-            if(visible&&node>=0)
+            Vector3 hit=default;
+            SpatialPointerOnOverview=visible&&dashboard!=null&&dashboard.TryOverviewRay(ray,out _,out hit);
+            SpatialHoverNode=visible?node:-1;
+            float distance=node>=0?Mathf.Max(.1f,Vector3.Dot(rig.transform.TransformPoint(rig.NodeCenter(node))-ray.origin,ray.direction)):3f;
+            Vector3 end=SpatialPointerOnOverview?hit-ray.direction*.012f:ray.GetPoint(distance);
+            // Reuse the authored ray and marker so users can aim before closing a pinch.
+            if(pointerLine!=null)
             {
-                reticle.position=dashboard!=null&&dashboard.TryOverviewRay(ray,out _,out Vector3 hit)
-                    ?hit-ray.direction*.012f:rig.transform.TransformPoint(rig.NodeCenter(node));
+                pointerLine.enabled=visible;
+                if(visible){pointerLine.SetPosition(0,ray.origin);pointerLine.SetPosition(1,end);}
+            }
+            if(reticle==null)return;
+            reticle.gameObject.SetActive(visible);
+            if(visible)
+            {
+                reticle.position=end;
+                reticle.localScale=Vector3.one*Mathf.Clamp(Vector3.Distance(ray.origin,end)*.008f,.012f,.18f);
             }
         }
     }

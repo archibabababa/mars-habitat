@@ -29,6 +29,8 @@ namespace SpatialCollective
         private float routeSize;
         private readonly Quaternion detailRotation=Quaternion.LookRotation(new Vector3(-.7f,-.35f,1));
         private Vector3 referencePosition,overviewPosition;
+        private Vector3 previousEyeOffset;
+        private Quaternion previousEyeRotation;
         private Quaternion referenceRotation,overviewRotation;
         private float nextRender,overviewSize;
         private readonly LineRenderer[] trajectories=new LineRenderer[2];
@@ -134,9 +136,15 @@ namespace SpatialCollective
             for(int i=0;i<6;i++)rig.SetBaseline(i,shape[i]);rig.SetTravel(0,dep);rig.SetTravel(1,app);rig.coupled=linked;rig.Rebuild();
             Vector3 center=(min+max)*.5f;
             overviewPosition=aim+overviewRotation*new Vector3(center.x,center.y,min.z-30);
-            overviewSize=Mathf.Max((max.y-min.y)*.5f,(max.x-min.x)*.5f/(OverviewTexture.width/(float)OverviewTexture.height))*1.15f;
+            overviewSize=Mathf.Max((max.y-min.y)*.5f,(max.x-min.x)*.5f/(OverviewTexture.width/(float)OverviewTexture.height))*1.05f;
         }
         public void Calibrate(){referencePosition=head.transform.position;referenceRotation=head.transform.rotation;nextRender=0;}
+        public void RememberInterior()
+        {
+            // Store the departing eye pose in model space; the preview remains live as its room deforms.
+            previousEyeOffset=rig.transform.InverseTransformPoint(head.transform.position)-rig.NodeFloor(rig.selectedNode);
+            previousEyeRotation=Quaternion.Inverse(rig.transform.rotation)*head.transform.rotation;
+        }
         public void UpdateViewState()
         {
             if(OverviewCamera==null || !rig.Ready)return;
@@ -151,18 +159,23 @@ namespace SpatialCollective
                 trajectories[i].widthMultiplier=.055f*s;
                 for(int j=0;j<33;j++)trajectories[i].SetPosition(j,rig.transform.TransformPoint(rig.SampleFlight(i,j/32f)));
             }
-            // 3) Prefer InspectionNode for detail; otherwise use selectedNode.
-            int node=dashboard.experience.InspectionNode>=0?dashboard.experience.InspectionNode:rig.selectedNode;
+            // 3) Keep the previous main-view room live while the participant edits the new room.
+            int node=dashboard.experience.PreviousInteriorNode;
+            bool previous=node>=0&&(!rig.inside||node!=rig.selectedNode);
+            if(!previous)node=dashboard.experience.InspectionNode>=0?dashboard.experience.InspectionNode:rig.selectedNode;
+            // Before the first room change, retain the authored remote preview.
+            if(!previous&&rig.inside&&(node==rig.selectedNode||!rig.data.nodes[node].detached))
+                node=rig.NodeForRegion(rig.selectedNode==rig.NodeForRegion(4)?5:4);
             if(rig.extraViewNode!=node){rig.extraViewNode=node;rig.MarkDirty();rig.Rebuild();}
             RoomId=rig.data.nodes[node].id;
             var filter=RoomCamera.GetComponent<CollectiveViewFilter>();filter.focusNode=node;
             bool detached=rig.data.nodes[node].detached;
             RoomCamera.GetComponent<Skybox>().material=marsSky;
             RoomCamera.clearFlags=CameraClearFlags.Skybox;
-            if(detached)PositionDetached(node,s);
+            if(detached&&!rig.inside&&!previous)PositionDetached(node,s);
             else
             {
-                // 4) Regular cabins preserve 1:1 body displacement relative to the pose recorded by Calibrate.
+                // 4) Cabin interiors preserve 1:1 body displacement relative to the pose recorded by Calibrate.
                 DetailIsRoute=false;RoomCamera.orthographic=false;RoomCamera.cullingMask=1<<8;filter.neighborVisibility=0;
                 int[] adjacent=rig.data.nodes[node].neighbors;
                 Vector3 look=adjacent.Length>0?rig.NodeCenter(adjacent[0])-rig.NodeCenter(node):rig.data.overviewCenter-rig.NodeCenter(node);
@@ -174,7 +187,14 @@ namespace SpatialCollective
                 Vector3 localEye=rig.NodeFloor(node)+baseOrientation*((Vector3.up*initialHeight+displacement)/s);
                 RoomCamera.transform.position=rig.transform.TransformPoint(localEye);
                 RoomCamera.transform.rotation=rig.transform.rotation*baseOrientation*Quaternion.Inverse(referenceRotation)*head.transform.rotation;
-                DetailTitle=RoomId+" / LINKED ROOM";DetailNote="BODY MOTION 1:1";
+                if(previous)
+                {
+                    RoomCamera.transform.position=rig.transform.TransformPoint(rig.NodeFloor(node)+previousEyeOffset);
+                    RoomCamera.transform.rotation=rig.transform.rotation*previousEyeRotation;
+                }
+                DetailTitle=RoomId+(previous?" / PREVIOUS INTERIOR":" / INTERIOR");
+                int region=rig.RegionForNode(node);
+                DetailNote=$"SHAPE {rig.Actual[region]:0.00}"+(detached?$"    TRAVEL {rig.GetTravel(region-4):0.00}":"");
             }
             lastDetailNode=node;
             RoomCamera.nearClipPlane=Mathf.Max(.001f,.04f*s);RoomCamera.farClipPlane=300*s;

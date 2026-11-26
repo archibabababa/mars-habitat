@@ -14,10 +14,10 @@ namespace SpatialCollective
         private TextMesh valueReadout,workspaceTitle,overviewCaption,detailCaption,detailNote,navigationHint;
         private Transform workspaceRoot;
         private Mesh workspaceQuadMesh;
-        private Renderer overviewFrame,detailFrame,valueFrame,titleFrame;
+        private Renderer overviewFrame,detailFrame,valueFrame;
         private float lastAspect=-1,lastFov=-1;
         private bool lastHeadset;
-        public const float ReadoutWidth=.78f,ReadoutHeight=.19f;
+        public const float ReadoutWidth=1f,ReadoutHeight=.40f;
         public bool IsHeadsetPresentation=>presentation==CollectivePresentation.Headset ||
             (presentation==CollectivePresentation.Automatic&&(XRSettings.isDeviceActive||Application.platform==RuntimePlatform.Android));
         public bool ParticipantViewsVisible=>HeadsetLayout&&workspaceRoot!=null&&workspaceRoot.gameObject.activeInHierarchy;
@@ -39,7 +39,6 @@ namespace SpatialCollective
             overviewFrame=WorkspaceQuad("Whole view glass frame",glass);
             detailFrame=WorkspaceQuad("Detail view glass frame",glass);
             valueFrame=WorkspaceQuad("Read-only parameter glass",glass);
-            titleFrame=WorkspaceQuad("Location glass",glass);
             overviewScreen=WorkspaceQuad("Whole habitat - live Mars view",TextureMaterial(experience.linkedViews.OverviewTexture));
             roomScreen=WorkspaceQuad("Selected space - live detail view",TextureMaterial(experience.linkedViews.RoomTexture));
             overviewScreen.sharedMaterial.SetFloat("_Opacity",viewportOpacity);roomScreen.sharedMaterial.SetFloat("_Opacity",viewportOpacity);
@@ -77,7 +76,7 @@ namespace SpatialCollective
         public bool IsReadOnlySurface(Ray ray)
         {
             if(!ParticipantViewsVisible)return false;
-            foreach(var surface in new[]{roomScreen,valueFrame,titleFrame,overviewFrame,detailFrame})
+            foreach(var surface in new[]{roomScreen,valueFrame,overviewFrame,detailFrame})
             {
                 if(surface==null||!surface.gameObject.activeInHierarchy)continue;
                 var t=surface.transform;var plane=new Plane(t.forward,t.position);
@@ -105,7 +104,7 @@ namespace SpatialCollective
             Quaternion target=IsHeadsetPresentation?Quaternion.Euler(0,head.eulerAngles.y,0):head.rotation;
             if(immediate||!IsHeadsetPresentation)transform.rotation=target;
             else if(Quaternion.Angle(transform.rotation,target)>15 && !experience.IsDragging && !experience.SpatialPointerOnOverview &&
-                !Reading(overviewScreen)&&!Reading(roomScreen)&&!Reading(valueFrame)&&!Reading(titleFrame))
+                !Reading(overviewScreen)&&!Reading(roomScreen)&&!Reading(valueFrame))
             {
                 float delta=Mathf.DeltaAngle(transform.eulerAngles.y,head.eulerAngles.y);
                 float yaw=head.eulerAngles.y-Mathf.Sign(delta)*15;
@@ -120,20 +119,22 @@ namespace SpatialCollective
             lastAspect=experience.head.aspect;lastFov=experience.head.fieldOfView;lastHeadset=IsHeadsetPresentation;
             if(lastHeadset)
             {
-                const float x=.96f,w=.78f,h=.43f;
-                Quad(overviewFrame,x,.34f,w+.025f,h+.085f);Quad(overviewScreen,x,.31f,w,h,-.008f);Text(overviewCaption,x-w/2,.585f,.036f);
-                Quad(detailFrame,x,-.22f,w+.025f,h+.10f);Quad(roomScreen,x,-.235f,w,h,-.008f);Text(detailCaption,x-w/2,.027f,.033f);Text(detailNote,x-w/2,-.467f,.029f);
-                Quad(valueFrame,x,-.64f,ReadoutWidth+.025f,ReadoutHeight);Text(valueReadout,x-w/2,-.566f,.040f);
-                Quad(titleFrame,-.20f,.55f,.88f,.13f);Text(workspaceTitle,-.62f,.599f,.030f);Text(navigationHint,-.62f,.548f,.027f);
+                const float x=1.08f,w=1f,h=.5625f;
+                Quad(overviewFrame,x,.385f,w+.025f,h+.085f);Quad(overviewScreen,x,.36f,w,h,-.008f);Text(overviewCaption,x-w/2,.705f,.036f);
+                Quad(detailFrame,x,-.30f,w+.025f,h+.08f);Quad(roomScreen,x,-.32f,w,h,-.008f);Text(detailCaption,x-w/2,.017f,.033f);
+                Quad(valueFrame,x,-.87f,ReadoutWidth+.025f,ReadoutHeight);
+                Text(workspaceTitle,x-w/2,-.685f,.029f);Text(valueReadout,x-w/2,-.74f,.033f);
+                Text(detailNote,x-w/2,-.88f,.025f);Text(navigationHint,x-w/2,-.925f,.024f);
             }
             else
             {
                 float height=2*viewingDistance*Mathf.Tan(experience.head.fieldOfView*Mathf.Deg2Rad*.5f),width=height*experience.head.aspect;
-                float x=width*.322f,w=Mathf.Min(width*.316f,height*.295f*(16f/9)),h=w/(16f/9),y1=height*.283f,y2=-height*.079f;
-                Quad(overviewFrame,x,y1+.012f*height,w+.018f*width,h+.065f*height);Quad(overviewScreen,x,y1,w,h,-.008f);Text(overviewCaption,x-w/2,y1+h/2+.043f*height,.019f*height);
-                Quad(detailFrame,x,y2+.004f*height,w+.018f*width,h+.088f*height);Quad(roomScreen,x,y2,w,h,-.008f);Text(detailCaption,x-w/2,y2+h/2+.043f*height,.019f*height);Text(detailNote,x-w/2,y2-h/2-.013f*height,.0145f*height);
-                Quad(valueFrame,x,-.375f*height,w+.018f*width,.16f*height);Text(valueReadout,x-w/2,-.310f*height,.023f*height);
-                Quad(titleFrame,-.215f*width,.435f*height,.53f*width,.09f*height);Text(workspaceTitle,-.472f*width,.468f*height,.024f*height);Text(navigationHint,-.472f*width,.429f*height,.018f*height);
+                float x=width*.305f,w=Mathf.Min(width*.36f,height*.315f*(16f/9)),h=w/(16f/9),y1=height*.285f,y2=-height*.10f;
+                Quad(overviewFrame,x,y1+.012f*height,w+.018f*width,h+.06f*height);Quad(overviewScreen,x,y1,w,h,-.008f);Text(overviewCaption,x-w/2,y1+h/2+.033f*height,.0185f*height);
+                Quad(detailFrame,x,y2+.012f*height,w+.018f*width,h+.06f*height);Quad(roomScreen,x,y2,w,h,-.008f);Text(detailCaption,x-w/2,y2+h/2+.033f*height,.0185f*height);
+                Quad(valueFrame,x,-.39f*height,w+.018f*width,.19f*height);
+                Text(workspaceTitle,x-w/2,-.307f*height,.0155f*height);Text(valueReadout,x-w/2,-.333f*height,.0185f*height);
+                Text(detailNote,x-w/2,-.408f*height,.014f*height);Text(navigationHint,x-w/2,-.434f*height,.0135f*height);
             }
         }
         private void LateUpdate()
@@ -146,8 +147,8 @@ namespace SpatialCollective
             if(valueReadout==null)return;var r=experience.rig;int selected=experience.selectedRegion;
             string target=experience.InspectionNode>=0?r.data.nodes[experience.InspectionNode].id:r.data.nodes[r.selectedNode].id;
             workspaceTitle.text=(r.inside?"INSIDE "+r.data.nodes[r.selectedNode].id:"OVERVIEW")+" | TARGET "+target;
-            navigationHint.text=experience.SpatialHint;
-            detailCaption.text=experience.linkedViews.DetailTitle;detailNote.text=experience.linkedViews.DetailNote;
+            navigationHint.text=experience.SpatialHint.Replace(" / BOTH:","\nBOTH:");
+            detailCaption.text=experience.linkedViews.DetailTitle;detailNote.text="VIEW "+experience.linkedViews.RoomId+" | "+experience.linkedViews.DetailNote;
             if(selected==0)valueReadout.text=$"WHOLE  p {r.GetBaseline(0):0.00}\nLONG {r.Actual[1]:0.00}   A {r.Actual[2]:0.00}   B {r.Actual[3]:0.00}\nLINK {r.GetCoupling(0):+0.00;-0.00;0.00}  {r.GetCoupling(1):+0.00;-0.00;0.00}  {r.GetCoupling(2):+0.00;-0.00;0.00}";
             else if(selected<4)valueReadout.text=$"{CollectiveRig.RegionNames[selected]}\np {r.Actual[selected]:0.00}   BASE {r.GetBaseline(selected):0.00}\nLINK {r.GetCoupling(selected-1):+0.00;-0.00;0.00}";
             else valueReadout.text=$"{(selected==4?"S08 / DEPARTURE":"O13 / APPROACH")}\nSHAPE {r.GetBaseline(selected):0.00}\nTRAVEL {r.GetTravel(selected-4):0.00}";

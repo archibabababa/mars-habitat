@@ -174,7 +174,7 @@ public static class WorkspaceDemoRecording
         {
             float progress=Mathf.SmoothStep(0,1,Mathf.InverseLerp(active.begin+.55f,active.end-.5f,t));
             if(active.travel)handShift=(active.to-active.from)*view.handTravel*(active.region==5?-1:1)*progress;
-            else span=active.startSpan+(active.to-active.from)*view.handTravel*progress;
+            else span=active.startSpan+((active.to-active.from)*view.shapeHandTravel+Mathf.Sign(active.to-active.from)*CollectiveExperience.OneHandDeadZone)*progress;
         }
         else if(!leftPinched&&!rightPinched){span=Mathf.MoveTowards(span,.46f,dt*.15f);handShift=Mathf.MoveTowards(handShift,0,dt*.25f);}
         Quaternion q=view.head.transform.rotation;Vector3 forward=Vector3.ProjectOnPlane(q*Vector3.forward,Vector3.up).normalized;

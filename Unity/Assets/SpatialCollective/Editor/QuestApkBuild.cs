@@ -8,7 +8,7 @@ using UnityEditor.Build.Reporting;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 
-// Reproducible sideload APK build; does not start or shorten a study session.
+// Build the Quest APK from the saved habitat scene.
 public static class QuestApkBuild
 {
     public static void Build()
@@ -31,7 +31,7 @@ public static class QuestApkBuild
         EditorUserBuildSettings.development = false;
         EditorUserBuildSettings.allowDebugging = false;
         AssetDatabase.SaveAssets();
-        string output = Path.GetFullPath("Builds/Mars_Spatial_Collective_Quest3_v0.9.7.apk");
+        string output = Path.GetFullPath("Builds/Mars.apk");
         int previousHeap = AndroidExternalToolsSettings.maxJvmHeapSize;
         BuildReport report;
         try

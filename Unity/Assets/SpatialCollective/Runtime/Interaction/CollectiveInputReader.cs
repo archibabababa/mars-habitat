@@ -141,7 +141,7 @@ namespace SpatialCollective
                 // Pinching changes finger geometry and may move the runtime aim ray.
                 // Freeze the last open-hand ray for target acquisition only; deformation
                 // continues to use the current tracked positions above.
-                if(!rightPinch){hasPointingRay=frame.hasPointer;if(hasPointingRay)pointingRay=frame.pointer;}
+                if(!rightPinch&&!frame.rightMiddlePinch){hasPointingRay=frame.hasPointer;if(hasPointingRay)pointingRay=frame.pointer;}
                 else if(hasPointingRay){frame.pointer=pointingRay;frame.hasPointer=true;frame.source=PointerSource.Hand;}
             }
             frame.secondary=leftTracked&&leftPinch;
@@ -170,6 +170,8 @@ namespace SpatialCollective
         {
             frame.leftMiddlePinch=MiddlePinch(leftTracked,true,ref leftMiddle);
             frame.rightMiddlePinch=MiddlePinch(rightTracked,false,ref rightMiddle);
+            if(frame.leftMiddlePinch)leftPinch=false;
+            if(frame.rightMiddlePinch)rightPinch=false;
             if(frame.leftMiddlePinch&&!leftPinch && hands.leftHand.GetJoint(XRHandJointID.Palm).TryGetPose(out Pose leftPalm))
                 frame.leftPosition=trackingOrigin.TransformPoint(leftPalm.position);
             if(frame.rightMiddlePinch&&!rightPinch && hands.rightHand.GetJoint(XRHandJointID.Palm).TryGetPose(out Pose rightPalm))
@@ -185,11 +187,14 @@ namespace SpatialCollective
         {
             if(!tracked){held=false;return false;}
             XRHand hand=left?hands.leftHand:hands.rightHand;
-            if(!hand.GetJoint(XRHandJointID.ThumbTip).TryGetPose(out Pose thumb)||!hand.GetJoint(XRHandJointID.MiddleTip).TryGetPose(out Pose middle))
+            if(!hand.GetJoint(XRHandJointID.ThumbTip).TryGetPose(out Pose thumb)||!hand.GetJoint(XRHandJointID.MiddleTip).TryGetPose(out Pose middle)||
+                !hand.GetJoint(XRHandJointID.IndexTip).TryGetPose(out Pose index))
                 {held=false;return false;}
-            held=EvaluatePinch(Vector3.Distance(thumb.position,middle.position),held,profile.pinchPressMetres,profile.pinchReleaseMetres);
+            held=EvaluateMiddlePinch(Vector3.Distance(thumb.position,middle.position),Vector3.Distance(thumb.position,index.position),held,profile.pinchPressMetres,profile.pinchReleaseMetres);
             return held;
         }
+        public static bool EvaluateMiddlePinch(float middleDistance,float indexDistance,bool held,float press,float release)
+            =>EvaluatePinch(middleDistance,held,press,release)&&middleDistance+.006f<indexDistance;
         private bool ReadHand(bool left,ref bool pressed,out Vector3 position)
         {
             position=Vector3.zero;

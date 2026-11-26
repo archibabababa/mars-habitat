@@ -62,7 +62,7 @@ namespace SpatialCollective
                 meshes[i].MarkDynamic();filters[i].sharedMesh=meshes[i];
                 basis[i]=data.batches[i].mesh.vertices;buffer[i]=new Vector3[basis[i].Length];
                 var nodeIds=new Vector2[basis[i].Length];
-                for(int v=0;v<nodeIds.Length;v++)nodeIds[v]=new Vector2(data.drivers[data.batches[i].vertexDrivers[v]].node,0);
+                for(int v=0;v<nodeIds.Length;v++)nodeIds[v]=new Vector2(data.drivers[data.batches[i].vertexDrivers[v]].node,data.batches[i].kind=="floor"?1:0);
                 meshes[i].uv2=nodeIds; // Visibility metadata only; imported vertices/drivers remain unchanged.
                 renderers[i].shadowCastingMode=ShadowCastingMode.Off;renderers[i].receiveShadows=false;
             }
